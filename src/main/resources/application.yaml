@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/tasklist?currentSchema=tasklist
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  sql:
+    init:
+      mode: never # настройка инициализации скриптом будет выполняться постоянно
+      continue-on-error: false # т.е. если будет ошибка, чтобы останавливалсь инициализация
+      data-locations: classpath:demo_data.sql
+  liquibase:
+    change-log: classpath:liquibase/db.changelog.yaml
+    enabled: true # указываем, что будет работать liquibase
+    default-schema: tasklist
+  jpa:
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+security:
+  jwt:
+    secret: c2FkZ2RmYWRzc2RmYmRhZGg1NjRhNnNkZ2FkZjU2MWRhZjUxaHNkZjU2Z3MxZjZncw0K
+    access: 3600000
+    refresh: 2592000000
+
+
