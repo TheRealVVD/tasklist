@@ -19,14 +19,13 @@ public class TaskRepositoryImpl implements TaskRepository {
     private final DataSourceConfig dataSourceConfig;
 
     private final String FIND_TASK_BY_ID = """
-            select t.id              as task_id,
+            SELECT t.id              as task_id,
                    t.title           as task_title,
                    t.description     as task_description,
                    t.expiration_date as task_expiration_date,
                    t.status          as task_status
-            from tasks t
-            where t.id = ?
-            """;
+            FROM tasks t
+            WHERE t.id = ?""";
 
     private final String FIND_ALL_TASKS_BY_USER_ID = """
             select t.id              as task_id,

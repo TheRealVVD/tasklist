@@ -27,6 +27,7 @@ public class UserRepositoryImpl implements UserRepository {
                    u.username as user_username,
                    u.password as user_password,
                    ur.role as user_role_role,
+                   t.id as task_id,
                    t.title as task_title,
                    t.description as task_description,
                    t.expiration_date as task_expiration_date,
@@ -44,6 +45,7 @@ public class UserRepositoryImpl implements UserRepository {
                    u.username as user_username,
                    u.password as user_password,
                    ur.role as user_role_role,
+                   t.id as task_id,
                    t.title as task_title,
                    t.description as task_description,
                    t.expiration_date as task_expiration_date,
@@ -143,7 +145,7 @@ public class UserRepositoryImpl implements UserRepository {
     public void create(User user) {
         try {
             Connection connection = dataSourceConfig.getConnection();
-            PreparedStatement ps = connection.prepareStatement(CREATE);
+            PreparedStatement ps = connection.prepareStatement(CREATE, PreparedStatement.RETURN_GENERATED_KEYS);
             ps.setString(1, user.getName());
             ps.setString(2, user.getUsername());
             ps.setString(3, user.getPassword());

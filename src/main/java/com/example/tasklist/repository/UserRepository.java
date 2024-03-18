@@ -3,12 +3,9 @@ package com.example.tasklist.repository;
 
 import com.example.tasklist.model.user.Role;
 import com.example.tasklist.model.user.User;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.Optional;
 
-//@Mapper
 public interface UserRepository {
 
     Optional<User> findById(Long userId);
@@ -19,9 +16,9 @@ public interface UserRepository {
 
     void create(User user);
 
-    void insertUserRole(@Param("userId") Long userId, @Param("role") Role role);
+    void insertUserRole(Long userId, Role role);
 
-    boolean isTaskOwner(@Param("userId") Long userId, @Param("taskId") Long taskId);
+    boolean isTaskOwner(Long userId, Long taskId);
 
     void delete(Long id);
 
