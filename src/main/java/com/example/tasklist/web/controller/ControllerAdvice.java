@@ -1,9 +1,6 @@
 package com.example.tasklist.web.controller;
 
-import com.example.tasklist.utils.exception.AccessDeniedException;
-import com.example.tasklist.utils.exception.ExceptionBody;
-import com.example.tasklist.utils.exception.ResourceMappingException;
-import com.example.tasklist.utils.exception.ResourceNotFoundException;
+import com.example.tasklist.utils.exception.*;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
@@ -71,6 +68,12 @@ public class ControllerAdvice {
         return new ExceptionBody("Authentication failed.");
     }
 
+    @ExceptionHandler(ImageUploadException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ExceptionBody handleImageUpload(ImageUploadException e) {
+        return new ExceptionBody(e.getMessage());
+    }
+
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -78,5 +81,6 @@ public class ControllerAdvice {
         e.printStackTrace();
         return new ExceptionBody("Internal error.");
     }
+
 
 }
