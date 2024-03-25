@@ -12,7 +12,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.0.2</version>
+        <version>3.1.2</version>
         <relativePath/>
     </parent>
 
@@ -26,10 +26,17 @@
         <hibernate-validator.version>8.0.0.Final</hibernate-validator.version>
         <jakarta-validator.version>3.0.2</jakarta-validator.version>
         <jjwt.version>0.11.5</jjwt.version>
-        <mybatis.version>3.0.1</mybatis.version>
-        <liquibase.version>4.17.2</liquibase.version>
+        <liquibase.version>4.23.0</liquibase.version>
         <preliquibase.version>1.4.0</preliquibase.version>
-        <springdoc.version>2.3.0</springdoc.version>
+        <springdoc.version>2.0.2</springdoc.version>
+        <minio.version>8.5.3</minio.version>
+        <xml-format.version>3.3.1</xml-format.version>
+        <checkstyle.version>3.3.1</checkstyle.version>
+        <graphql-java-kickstart.version>15.2.0</graphql-java-kickstart.version>
+        <graphql-java-extended-scalars.version>20.2</graphql-java-extended-scalars.version>
+        <junit-jupiter.version>5.10.2</junit-jupiter.version>
+        <mockito.version>5.11.0</mockito.version>
+        <jacoco.version>0.8.11</jacoco.version>
     </properties>
 
     <dependencies>
@@ -154,6 +161,12 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>${minio.version}</version>
+        </dependency>
+
 
     </dependencies>
 
@@ -163,9 +176,6 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <image>
-                        <builder>paketobuildpacks/builder-jammy-base:latest</builder>
-                    </image>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>
@@ -173,6 +183,92 @@
                         </exclude>
                     </excludes>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>au.com.acegi</groupId>
+                <artifactId>xml-format-maven-plugin</artifactId>
+                <version>${xml-format.version}</version>
+                <executions>
+                    <execution>
+                        <id>xml-format</id>
+                        <goals>
+                            <goal>xml-format</goal>
+                        </goals>
+                        <configuration>
+                            <indentSize>4</indentSize>
+                            <keepBlankLines>true</keepBlankLines>
+                            <lineEnding>LF</lineEnding>
+                            <includes>pom.xml</includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${checkstyle.version}</version>
+                <configuration>
+                    <configLocation>sun_checks.xml</configLocation>
+                    <consoleOutput>true</consoleOutput>
+                    <failsOnError>true</failsOnError>
+                    <linkXRef>false</linkXRef>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>validate</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <suppressionsFileExpression>checkstyle.suppressions.file</suppressionsFileExpression>
+                            <suppressionsLocation>checkstyle-suppressions.xml</suppressionsLocation>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <execution>
+                        <id>default-prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule implementation="org.jacoco.maven.RuleConfiguration">
+                                    <element>PACKAGE</element>
+                                    <limits>
+                                        <limit implementation="org.jacoco.report.check.Limit">
+                                            <counter>INSTRUCTION</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.60</minimum>
+                                        </limit>
+                                    </limits>
+                                    <includes>
+                                        <include>com.example.tasklist.service.impl</include>
+                                    </includes>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

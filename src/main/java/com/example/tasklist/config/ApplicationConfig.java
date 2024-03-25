@@ -1,8 +1,10 @@
 package com.example.tasklist.config;
 
+import com.example.tasklist.service.props.MinioProperties;
 import com.example.tasklist.web.security.JwtTokenFilter;
 import com.example.tasklist.web.security.JwtTokenProvider;
 import com.example.tasklist.web.security.expression.CustomSecurityExceptionHandler;
+import io.minio.MinioClient;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
@@ -21,6 +23,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -35,6 +38,7 @@ public class ApplicationConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final ApplicationContext applicationContext;
+    private final MinioProperties minioProperties;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -51,6 +55,14 @@ public class ApplicationConfig {
         DefaultMethodSecurityExpressionHandler expressionHandler = new CustomSecurityExceptionHandler();
         expressionHandler.setApplicationContext(applicationContext);
         return expressionHandler;
+    }
+
+    @Bean
+    public MinioClient minioClient() {
+        return MinioClient.builder()
+                .endpoint(minioProperties.getUrl())
+                .credentials(minioProperties.getAccessKey(), minioProperties.getSecretKey())
+                .build();
     }
 
     @Bean
@@ -76,30 +88,40 @@ public class ApplicationConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
-                .csrf().disable() //отключаем csrf
-                .cors() //подключаем cors
-                .and()
-                .httpBasic().disable() //отключаем базовую спецификацию Spring'а
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // конфигурация сессии
-                .and()
-                .exceptionHandling() // добавляем свой фильтр, принимающий запросы
-                .authenticationEntryPoint(((request, response, authException) -> {
-                    response.setStatus(HttpStatus.UNAUTHORIZED.value());
-                    response.getWriter().write("Unauthorized.");
-                }))
-                .accessDeniedHandler(((request, response, accessDeniedException) -> {
-                    response.setStatus(HttpStatus.FORBIDDEN.value());
-                    response.getWriter().write("Unauthorized.");
-                }))
-                .and()
-                .authorizeHttpRequests() //указываем, для каких адресов будет проверка
-                .requestMatchers("/api/v1/auth/**").permitAll()
-                .requestMatchers("/swagger-ui/**").permitAll()
-                .requestMatchers("/v3/api-docs/**").permitAll()
-                .anyRequest().authenticated()
-                .and()
-                .anonymous().disable()
+                .csrf(AbstractHttpConfigurer::disable) //отключаем csrf
+                .cors(AbstractHttpConfigurer::disable) //подключаем cors
+                .httpBasic(AbstractHttpConfigurer::disable) //отключаем базовую спецификацию Spring'а
+                .sessionManagement(sessionManagement -> sessionManagement
+                        .sessionCreationPolicy(
+                                SessionCreationPolicy.STATELESS
+                        )
+                ) // конфигурация сессии
+                .exceptionHandling(configurer ->
+                        configurer.authenticationEntryPoint(
+                                        (request, response, exception) -> {
+                                            response.setStatus(
+                                                    HttpStatus.UNAUTHORIZED.value()
+                                            );
+                                            response.getWriter()
+                                                    .write("Unauthorized.");
+                                        })
+                                .accessDeniedHandler(
+                                        (request, response, exception) -> {
+                                            response.setStatus(HttpStatus
+                                                    .FORBIDDEN.value()
+                                            );
+                                            response.getWriter()
+                                                    .write("Unauthorized.");
+                                        })) // добавляем свой фильтр, принимающий запросы
+                .authorizeHttpRequests(configurer ->
+                        configurer.requestMatchers("/api/v1/auth/**")
+                                .permitAll()
+                                .requestMatchers("/swagger-ui/**")
+                                .permitAll()
+                                .requestMatchers("/v3/api-docs/**")
+                                .permitAll()
+                                .anyRequest().authenticated()) //указываем, для каких адресов будет проверка
+                .anonymous(AbstractHttpConfigurer::disable)
                 .addFilterBefore(new JwtTokenFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();

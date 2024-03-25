@@ -26,13 +26,23 @@ spring:
     hiddenmethod:
       filter:
         enabled: true
+
 security:
   jwt:
     secret: ${JWT_SECRET}
     access: ${JWT_ACCESS}
     refresh: ${JWT_REFRESH}
+
 springdoc:
   override-with-generic-response: false # убираем сообщения об ошибках в swagger-ui
+
+minio:
+  bucket: ${MINIO_BUCKET}
+  url: ${MINIO_URL}
+  accessKey: ${MINIO_ACCESS_KEY}
+  secretKey: ${MINIO_SECRET_KEY}
+
+
 #logging:
 #  level:
 #    root: ERROR
